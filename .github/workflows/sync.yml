@@ -1,0 +1,61 @@
+name: SS Activewear → Shopify Sync
+
+on:
+  schedule:
+    # Daily at 3:00 AM MST (Phoenix, no DST) = 10:00 UTC
+    - cron: "0 10 * * *"
+  workflow_dispatch: {}
+
+# Prevent overlapping runs from corrupting the checkpoint
+concurrency:
+  group: ss-shopify-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350   # hard stop just under GitHub's 6h limit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sync
+        env:
+          SS_USERNAME: ${{ secrets.SS_USERNAME }}
+          SS_API_KEY: ${{ secrets.SS_API_KEY }}
+          SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+          SHOPIFY_STORE_URL: ${{ secrets.SHOPIFY_STORE_URL }}
+        run: python sync.py
+
+      # Commit checkpoint + run logs back even if the sync step hit its
+      # time budget — the checkpoint is what makes resume work.
+      - name: Commit checkpoint and logs
+        if: always()
+        run: |
+          git config user.name "ss-sync-bot"
+          git config user.email "actions@github.com"
+          git add checkpoint.json logs/ || true
+          git diff --cached --quiet || git commit -m "sync: checkpoint + logs [skip ci]"
+          git pull --rebase origin ${GITHUB_REF_NAME} || true
+          git push
+
+      - name: Upload run log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 30
