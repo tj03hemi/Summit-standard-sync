@@ -71,7 +71,7 @@ LOG_DIR = os.path.join(ROOT, "logs")
 SS_BASE = "https://api.ssactivewear.com/v2"
 SS_CDN = "https://www.ssactivewear.com/"
 
-SHOPIFY_API_VERSION = os.environ.get("SHOPIFY_API_VERSION", "2025-01")
+SHOPIFY_API_VERSION = os.environ.get("SHOPIFY_API_VERSION", "2026-01")
 
 START_TIME = time.monotonic()
 
@@ -209,13 +209,44 @@ class SSClient:
 class ShopifyClient:
     def __init__(self):
         store = os.environ["SHOPIFY_STORE_URL"].replace("https://", "").strip("/")
-        token = os.environ["SHOPIFY_ADMIN_TOKEN"]
         self.endpoint = f"https://{store}/admin/api/{SHOPIFY_API_VERSION}/graphql.json"
         self.session = requests.Session()
-        self.session.headers.update({
-            "X-Shopify-Access-Token": token,
-            "Content-Type": "application/json",
-        })
+        self.session.headers["Content-Type"] = "application/json"
+
+        # Support both auth methods:
+        # 1. Direct token (SHOPIFY_ADMIN_TOKEN) — shpat_xxx
+        # 2. OAuth Client ID + Secret exchange (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET)
+        token = os.environ.get("SHOPIFY_ADMIN_TOKEN")
+        if not token:
+            token = self._exchange_token(store)
+        self.session.headers["X-Shopify-Access-Token"] = token
+
+    def _exchange_token(self, store):
+        """Exchange Client ID + Secret for an access token via OAuth client credentials."""
+        client_id = os.environ["SHOPIFY_CLIENT_ID"]
+        client_secret = os.environ["SHOPIFY_CLIENT_SECRET"]
+        url = f"https://{store}/admin/oauth/access_token"
+        r = requests.post(url, json={
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "client_credentials",
+        }, timeout=30)
+        if r.status_code != 200:
+            # Some Shopify custom apps use Basic auth with client_id:secret instead
+            r = requests.post(url,
+                auth=(client_id, client_secret),
+                json={"grant_type": "client_credentials"},
+                timeout=30)
+        if r.status_code != 200:
+            raise RuntimeError(
+                f"Shopify OAuth token exchange failed: {r.status_code} {r.text[:300]}"
+            )
+        data = r.json()
+        token = data.get("access_token")
+        if not token:
+            raise RuntimeError(f"No access_token in Shopify OAuth response: {data}")
+        LOG.event("INFO", "-", "Shopify OAuth token exchange successful")
+        return token
         self.lock = threading.Lock()
 
     def gql(self, query, variables=None, retries=6):

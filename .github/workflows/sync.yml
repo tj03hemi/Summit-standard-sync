@@ -37,6 +37,8 @@ jobs:
           SS_USERNAME: ${{ secrets.SS_USERNAME }}
           SS_API_KEY: ${{ secrets.SS_API_KEY }}
           SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+          SHOPIFY_CLIENT_ID: ${{ secrets.SHOPIFY_CLIENT_ID }}
+          SHOPIFY_CLIENT_SECRET: ${{ secrets.SHOPIFY_CLIENT_SECRET }}
           SHOPIFY_STORE_URL: ${{ secrets.SHOPIFY_STORE_URL }}
         run: python sync.py
 
