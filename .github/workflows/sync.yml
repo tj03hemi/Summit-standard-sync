@@ -1,7 +1,7 @@
 name: SS Activewear → Shopify Sync
 
 on:
-  schedule:
+  schedule: []
     # Daily at 3:00 AM MST (Phoenix, no DST) = 10:00 UTC
     - cron: "0 10 * * *"
   workflow_dispatch: {}
