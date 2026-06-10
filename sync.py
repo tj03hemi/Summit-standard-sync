@@ -213,56 +213,42 @@ class ShopifyClient:
         self.session = requests.Session()
         self.session.headers["Content-Type"] = "application/json"
 
-        # Support both auth methods:
-        # 1. Direct token (SHOPIFY_ADMIN_TOKEN) — shpat_xxx
-        # 2. OAuth Client ID + Secret exchange (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET)
-        token = os.environ.get("SHOPIFY_ADMIN_TOKEN")
-        if not token:
+        # Auth priority:
+        # 1. OAuth client credentials (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET)
+        #    — the required method for Dev Dashboard custom apps (2026+).
+        #    Tokens last 24h; we exchange a fresh one every run.
+        # 2. Direct token (SHOPIFY_ADMIN_TOKEN) — legacy shpat_ tokens only.
+        if os.environ.get("SHOPIFY_CLIENT_ID") and os.environ.get("SHOPIFY_CLIENT_SECRET"):
             token = self._exchange_token(store)
+        else:
+            token = os.environ["SHOPIFY_ADMIN_TOKEN"]
         self.session.headers["X-Shopify-Access-Token"] = token
 
     def _exchange_token(self, store):
-        """Exchange Client ID + Secret for an access token via OAuth client credentials."""
-        client_id = os.environ["SHOPIFY_CLIENT_ID"]
-        client_secret = os.environ["SHOPIFY_CLIENT_SECRET"]
+        """Client credentials grant — body MUST be form-encoded, not JSON."""
         url = f"https://{store}/admin/oauth/access_token"
-
-        LOG.event("INFO", "-", f"Attempting token exchange at {url}")
-
-        # Attempt 1: JSON body
-        r = requests.post(url, json={
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "grant_type": "client_credentials",
-        }, timeout=30)
-        LOG.event("INFO", "-", f"Token exchange attempt 1: status={r.status_code} body={r.text[:200]}")
-
-        if r.status_code == 200:
-            data = r.json()
-            token = data.get("access_token")
-            if token:
-                LOG.event("INFO", "-", "Shopify OAuth token exchange successful")
-                return token
-
-        # Attempt 2: Basic auth
-        r2 = requests.post(url,
-            auth=(client_id, client_secret),
-            json={"grant_type": "client_credentials"},
-            timeout=30)
-        LOG.event("INFO", "-", f"Token exchange attempt 2: status={r2.status_code} body={r2.text[:200]}")
-
-        if r2.status_code == 200:
-            data = r2.json()
-            token = data.get("access_token")
-            if token:
-                LOG.event("INFO", "-", "Shopify OAuth token exchange (basic auth) successful")
-                return token
-
-        raise RuntimeError(
-            f"Shopify OAuth token exchange failed.\n"
-            f"Attempt 1: {r.status_code} {r.text[:300]}\n"
-            f"Attempt 2: {r2.status_code} {r2.text[:300]}"
+        r = requests.post(
+            url,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data={
+                "grant_type": "client_credentials",
+                "client_id": os.environ["SHOPIFY_CLIENT_ID"],
+                "client_secret": os.environ["SHOPIFY_CLIENT_SECRET"],
+            },
+            timeout=30,
         )
+        if r.status_code != 200:
+            raise RuntimeError(
+                f"Shopify client credentials exchange failed: "
+                f"{r.status_code} {r.text[:300]}"
+            )
+        data = r.json()
+        token = data.get("access_token")
+        if not token:
+            raise RuntimeError(f"No access_token in response: {data}")
+        LOG.event("INFO", "-",
+                  f"Shopify token exchange OK (expires in {data.get('expires_in', '?')}s)")
+        return token
         self.lock = threading.Lock()
 
     def gql(self, query, variables=None, retries=6):
