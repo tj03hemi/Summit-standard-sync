@@ -18,6 +18,7 @@
   "use_sale_price_as_compare_at": true,
   "default_status": "DRAFT",
   "inventory_location_name": "Shop location",
+  "shopify_location_id": "gid://shopify/Location/89876431103",
   "time_budget_minutes": 290,
   "max_workers": 4,
   "adopt_existing": true,

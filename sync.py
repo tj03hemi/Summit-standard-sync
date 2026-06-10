@@ -226,27 +226,43 @@ class ShopifyClient:
         client_id = os.environ["SHOPIFY_CLIENT_ID"]
         client_secret = os.environ["SHOPIFY_CLIENT_SECRET"]
         url = f"https://{store}/admin/oauth/access_token"
+
+        LOG.event("INFO", "-", f"Attempting token exchange at {url}")
+
+        # Attempt 1: JSON body
         r = requests.post(url, json={
             "client_id": client_id,
             "client_secret": client_secret,
             "grant_type": "client_credentials",
         }, timeout=30)
-        if r.status_code != 200:
-            # Some Shopify custom apps use Basic auth with client_id:secret instead
-            r = requests.post(url,
-                auth=(client_id, client_secret),
-                json={"grant_type": "client_credentials"},
-                timeout=30)
-        if r.status_code != 200:
-            raise RuntimeError(
-                f"Shopify OAuth token exchange failed: {r.status_code} {r.text[:300]}"
-            )
-        data = r.json()
-        token = data.get("access_token")
-        if not token:
-            raise RuntimeError(f"No access_token in Shopify OAuth response: {data}")
-        LOG.event("INFO", "-", "Shopify OAuth token exchange successful")
-        return token
+        LOG.event("INFO", "-", f"Token exchange attempt 1: status={r.status_code} body={r.text[:200]}")
+
+        if r.status_code == 200:
+            data = r.json()
+            token = data.get("access_token")
+            if token:
+                LOG.event("INFO", "-", "Shopify OAuth token exchange successful")
+                return token
+
+        # Attempt 2: Basic auth
+        r2 = requests.post(url,
+            auth=(client_id, client_secret),
+            json={"grant_type": "client_credentials"},
+            timeout=30)
+        LOG.event("INFO", "-", f"Token exchange attempt 2: status={r2.status_code} body={r2.text[:200]}")
+
+        if r2.status_code == 200:
+            data = r2.json()
+            token = data.get("access_token")
+            if token:
+                LOG.event("INFO", "-", "Shopify OAuth token exchange (basic auth) successful")
+                return token
+
+        raise RuntimeError(
+            f"Shopify OAuth token exchange failed.\n"
+            f"Attempt 1: {r.status_code} {r.text[:300]}\n"
+            f"Attempt 2: {r2.status_code} {r2.text[:300]}"
+        )
         self.lock = threading.Lock()
 
     def gql(self, query, variables=None, retries=6):
@@ -778,7 +794,15 @@ def sync_style(ss, style, checkpoint, category_lookup):
 def main():
     global SHOPIFY, LOCATION_ID, SKU_MAP
     SHOPIFY = ShopifyClient()
-    LOCATION_ID = SHOPIFY.primary_location_id()
+    # Use hardcoded location ID from config if available — skips an API call
+    # and works around auth issues on first run. Get it from:
+    # Shopify admin -> Settings -> Locations -> click location -> copy ID from URL
+    hardcoded = CONFIG.get("shopify_location_id")
+    if hardcoded:
+        LOCATION_ID = hardcoded
+        LOG.event("INFO", "-", f"Using configured location ID: {LOCATION_ID}")
+    else:
+        LOCATION_ID = SHOPIFY.primary_location_id()
     ss = SSClient()
 
     checkpoint = load_checkpoint()
