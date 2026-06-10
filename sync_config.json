@@ -1,137 +1,60 @@
 {
   "brands": [
-    "Adidas",
-    "Alleson Athletic",
-    "AllPro",
-    "Alpine Fleece",
-    "American Apparel",
-    "Artisan Collection by Reprime",
-    "Augusta Sportswear",
-    "BAGedge",
-    "BELLA + CANVAS",
-    "Berne Apparel",
-    "Boxercraft",
-    "Bulwark",
-    "C2 Sport",
-    "Champion",
-    "Chef Designs",
-    "Code Five",
-    "Colortone",
-    "Columbia",
-    "Comfort Colors",
-    "ComfortWash by Hanes",
-    "Dickies",
-    "DRI DUCK",
-    "Flexfit",
-    "Gildan",
-    "Hanes",
-    "HUK",
-    "Imperial",
-    "Independent Trading Co.",
-    "J. America",
-    "Jaanuu",
-    "JERZEES",
-    "Kati",
-    "Kishigo",
-    "Lane Seven",
-    "LAT",
-    "Liberty Bags",
-    "Marmot",
-    "MERET",
-    "MV Sport",
-    "Nautica",
-    "Next Level",
-    "North End",
-    "OAD",
-    "Oakley",
-    "Onna",
-    "Paragon",
-    "Pukka",
-    "Puma Golf",
-    "Q-Tees",
-    "Rabbit Skins",
-    "RealTree",
-    "Red Kap",
-    "Richardson",
-    "Russell Athletic",
-    "Shaka Wear",
-    "SoftShirts",
-    "Spyder",
-    "Swannies",
-    "Team 365",
-    "Threadfast Apparel",
-    "TriDri",
-    "Tultex",
-    "UltraClub",
-    "Under Armour",
-    "Valucap",
-    "vineyard vines",
-    "Weatherproof",
-    "YP Classics"
+    "Adidas", "Alleson Athletic", "AllPro", "Alpine Fleece", "American Apparel",
+    "Artisan Collection by Reprime", "Augusta Sportswear", "BAGedge", "BELLA + CANVAS",
+    "Berne Apparel", "Boxercraft", "Bulwark", "C2 Sport", "Champion", "Chef Designs",
+    "Code Five", "Colortone", "Columbia", "Comfort Colors", "ComfortWash by Hanes",
+    "Dickies", "DRI DUCK", "Flexfit", "Gildan", "Hanes", "HUK", "Imperial",
+    "Independent Trading Co.", "J. America", "Jaanuu", "JERZEES", "Kati", "Kishigo",
+    "Lane Seven", "LAT", "Liberty Bags", "Marmot", "MERET", "MV Sport", "Nautica",
+    "Next Level", "North End", "OAD", "Oakley", "Onna", "Paragon", "Pukka",
+    "Puma Golf", "Q-Tees", "Rabbit Skins", "RealTree", "Red Kap", "Richardson",
+    "Russell Athletic", "Shaka Wear", "SoftShirts", "Spyder", "Swannies", "Team 365",
+    "Threadfast Apparel", "TriDri", "Tultex", "UltraClub", "Under Armour", "Valucap",
+    "vineyard vines", "Weatherproof", "YP Classics"
   ],
+
   "markup_multiplier": 1.0,
   "use_sale_price_as_compare_at": true,
   "default_status": "DRAFT",
   "inventory_location_name": "Shop location",
   "time_budget_minutes": 290,
   "max_workers": 4,
+  "adopt_existing": true,
+
   "customization_cta_url": "https://summitstandardco.com/pages/custom-orders",
-  "customization_blurb_html": "<div class=\"ss-custom-cta\"><h3>\u2726 Make It Yours \u2014 Custom Embroidery, DTF, Sublimation &amp; Patches</h3><p>Every product we carry is fully customizable. Summit Standard Co. specializes in professional embroidery, DTF transfers, sublimation, embroidered patches, and leather patches. <strong><a href=\"https://summitstandardco.com/pages/custom-orders\">Submit a request for quote for custom work \u2192</a></strong></p></div>",
+  "customization_blurb_html": "<div class=\"ss-custom-cta\"><h3>✦ Make It Yours — Custom Embroidery, DTF, Sublimation &amp; Patches</h3><p>Every product we carry is fully customizable. Summit Standard Co. specializes in professional embroidery, DTF transfers, sublimation, embroidered patches, and leather patches. <strong><a href=\"https://summitstandardco.com/pages/custom-orders\">Submit a request for quote for custom work →</a></strong></p></div>",
+
   "gender_collections": {
-    "mens": "mens",
-    "womens": "womens",
-    "youth": "youth"
+    "mens": null,
+    "womens": null,
+    "youth": null
   },
+
+  "all_products_collection": "embroidery-all-products",
+
   "category_collection_map": {
-    "T-Shirts": [
-      "blanks-tees"
-    ],
-    "Fleece": [
-      "sweatshirts-hoodies"
-    ],
-    "Sweatshirts": [
-      "sweatshirts-hoodies"
-    ],
-    "Headwear": [
-      "hats"
-    ],
-    "Caps": [
-      "hats"
-    ],
-    "Polos": [
-      "polos"
-    ],
-    "Polos/Knits": [
-      "polos"
-    ],
-    "Outerwear": [
-      "outerwear"
-    ],
-    "Jackets": [
-      "outerwear"
-    ],
-    "Bags": [
-      "bags"
-    ],
-    "Activewear": [
-      "activewear"
-    ],
-    "Workwear": [
-      "workwear"
-    ],
-    "Pants": [
-      "pants-shorts"
-    ],
-    "Shorts": [
-      "pants-shorts"
-    ],
-    "Infants & Toddlers": [
-      "youth"
-    ],
-    "Accessories": [
-      "accessories"
-    ]
+    "T-Shirts": ["embroidery-t-shirts", "embroidery-all-products"],
+    "Fleece": ["embroidery-sweatshirts-fleece", "embroidery-all-products"],
+    "Sweatshirts": ["embroidery-sweatshirts-fleece", "embroidery-all-products"],
+    "Polos": ["embroidery-polos-knits", "embroidery-all-products"],
+    "Polos/Knits": ["embroidery-polos-knits", "embroidery-all-products"],
+    "Woven Shirts": ["embroidery-woven-dress-shirts", "embroidery-all-products"],
+    "Dress Shirts": ["embroidery-woven-dress-shirts", "embroidery-all-products"],
+    "Headwear": ["embroidery-caps-hats", "embroidery-all-products"],
+    "Caps": ["embroidery-caps-hats", "embroidery-all-products"],
+    "Activewear": ["embroidery-activewear", "embroidery-all-products"],
+    "Bags": ["embroidery-bags-totes", "embroidery-all-products"],
+    "Totes": ["embroidery-bags-totes", "embroidery-all-products"],
+    "Outerwear": ["embroidery-jackets-outerwear", "embroidery-all-products"],
+    "Jackets": ["embroidery-jackets-outerwear", "embroidery-all-products"],
+    "Workwear": ["embroidery-all-products"],
+    "Pants": ["embroidery-all-products"],
+    "Shorts": ["embroidery-all-products"],
+    "Accessories": ["embroidery-all-products"],
+    "Infants & Toddlers": ["embroidery-all-products"]
   },
+
   "shopify_taxonomy_map": {
     "T-Shirts": "gid://shopify/TaxonomyCategory/aa-1-13-8",
     "Tank Tops": "gid://shopify/TaxonomyCategory/aa-1-13-9",
@@ -149,7 +72,7 @@
     "Aprons": "gid://shopify/TaxonomyCategory/aa-1-2",
     "_fallback": "gid://shopify/TaxonomyCategory/aa-1"
   },
+
   "exclude_noe_retailing": false,
-  "skip_closeouts": false,
-  "adopt_existing": true
+  "skip_closeouts": false
 }

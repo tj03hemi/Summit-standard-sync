@@ -402,15 +402,24 @@ def build_tags(style, gender, category_names):
 def collections_for(style, gender):
     handles = []
     gc = CONFIG.get("gender_collections", {})
+    # Only add gender collections if they are explicitly set (not null/None)
     if gender == "unisex":
-        handles += [gc.get("mens"), gc.get("womens")]
+        for g in ["mens", "womens"]:
+            h = gc.get(g)
+            if h:
+                handles.append(h)
     else:
-        handles.append(gc.get(gender))
+        h = gc.get(gender)
+        if h:
+            handles.append(h)
+    # Category-based collections — matched against SS baseCategory
+    base = (style.get("baseCategory", "") or "").lower()
     for cat_key, cols in CONFIG.get("category_collection_map", {}).items():
-        if cat_key.lower() in (style.get("baseCategory", "") or "").lower():
-            handles += cols
+        if cat_key.lower() in base:
+            handles += [c for c in cols if c]
+    # De-duplicate, resolve to GIDs
     gids = []
-    for h in {h for h in handles if h}:
+    for h in dict.fromkeys(handles):  # preserves order, removes dupes
         gid = resolve_collection(h)
         if gid:
             gids.append(gid)
