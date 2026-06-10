@@ -209,6 +209,13 @@ class SSClient:
 class ShopifyClient:
     def __init__(self):
         store = os.environ["SHOPIFY_STORE_URL"].replace("https://", "").strip("/")
+        if not store.endswith(".myshopify.com"):
+            raise RuntimeError(
+                f"SHOPIFY_STORE_URL is '{store}' — it must be your .myshopify.com "
+                f"address (Shopify admin -> Settings -> Domains), NOT your custom "
+                f"domain. The Admin API and OAuth endpoints only work on "
+                f"the myshopify.com domain."
+            )
         self.endpoint = f"https://{store}/admin/api/{SHOPIFY_API_VERSION}/graphql.json"
         self.session = requests.Session()
         self.session.headers["Content-Type"] = "application/json"
