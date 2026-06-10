@@ -233,10 +233,15 @@ class ShopifyClient:
                 time.sleep(2)
             errs = data.get("errors")
             if errs:
-                if any("THROTTLED" in str(e.get("extensions", {}).get("code", "")) for e in errs):
+                # Shopify sometimes returns errors as strings, sometimes as dicts
+                def is_throttled(e):
+                    if isinstance(e, dict):
+                        return "THROTTLED" in str(e.get("extensions", {}).get("code", ""))
+                    return "THROTTLED" in str(e)
+                if any(is_throttled(e) for e in errs):
                     time.sleep(min(2 ** attempt * 2, 60))
                     continue
-                raise RuntimeError(f"Shopify GraphQL errors: {errs}")
+                raise RuntimeError(f"Shopify GraphQL errors: {errs} | full response: {data}")
             return data["data"]
         raise RuntimeError("Shopify GraphQL: retries exhausted (throttled)")
 
